@@ -62,14 +62,15 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
     private Teapot mTeapot;
     
     private float kBuildingScale = 12.0f;
+    //变换矩阵的参数
     private SampleApplication3DModel mBuildingsModel;
     
     private Renderer mRenderer;
     
     boolean mIsActive = false;
     
-    private static final float OBJECT_SCALE_FLOAT = 6.0f;
-    
+    private static final float OBJECT_SCALE_FLOAT = 50.0f;
+    //变换矩阵的参数
     
     public ImageTargetRenderer(ImageTargets activity,
         SampleApplicationSession session)
@@ -255,15 +256,21 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
             // http://blog.sina.com.cn/s/blog_a23d30f101018gl4.html
             if (!mActivity.isExtendedTrackingActive())
             {
-                Matrix.translateM(modelViewMatrix, 0, 0.0f, 0.0f,
+                //对茶壶数据矩阵做变换
+                Matrix.translateM(modelViewMatrix, 0,OBJECT_SCALE_FLOAT, 0.0f,
                     OBJECT_SCALE_FLOAT);
+                Matrix.rotateM(modelViewMatrix, 0, 90.0f, 1.0f, 0, 0);
                 //物体平移Matrix.translateM(mMMatrix,0,//偏移量,x, y, z//平移量)
                 //将物体沿着Z轴上升
                 Matrix.scaleM(modelViewMatrix, 0, OBJECT_SCALE_FLOAT,
                     OBJECT_SCALE_FLOAT, OBJECT_SCALE_FLOAT);
                 //Matrix.scaleM(mMMatrix,sx,sy, sz//缩放因子)
+                    //http://www.360doc.com/content/14/1028/09/19175681_420513219.shtml相机的学习
             } else
             {
+                //楼房矩阵变换
+                // Matrix.rotateM(modelViewMatrix, 0, 90.0f, 1.0f, 0, 0);
+                //Matrix.rotateM(mMMatrix,0,//偏移量angle,//旋转角度x, y, z//需要旋转的轴)
                 Matrix.rotateM(modelViewMatrix, 0, 90.0f, 1.0f, 0, 0);
                 Matrix.scaleM(modelViewMatrix, 0, kBuildingScale,
                     kBuildingScale, kBuildingScale);
