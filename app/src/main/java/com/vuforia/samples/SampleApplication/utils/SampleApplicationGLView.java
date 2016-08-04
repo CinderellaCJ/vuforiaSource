@@ -48,6 +48,7 @@ public class SampleApplicationGLView extends GLSurfaceView
         // is interpreted as any 32-bit surface with alpha by SurfaceFlinger.
         
         Log.i(LOGTAG, "Using OpenGL ES 2.0");
+        //translucent半透明的    opaque透明的
         Log.i(LOGTAG, "Using " + (translucent ? "translucent" : "opaque")
             + " GLView, depth buffer size: " + depth + ", stencil size: "
             + stencil);

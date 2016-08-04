@@ -68,12 +68,13 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
     
     boolean mIsActive = false;
     
-    private static final float OBJECT_SCALE_FLOAT = 3.0f;
+    private static final float OBJECT_SCALE_FLOAT = 6.0f;
     
     
     public ImageTargetRenderer(ImageTargets activity,
         SampleApplicationSession session)
     {
+        Log.i(LOGTAG,"creat a ImageTargetRenderer");
         mActivity = activity;
         vuforiaAppSession = session;
     }
@@ -119,40 +120,70 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
     private void initRendering()
     {
         mTeapot = new Teapot();
-        
+        Log.i(LOGTAG,"initRendering");
         mRenderer = Renderer.getInstance();
         
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, Vuforia.requiresAlpha() ? 0.0f
             : 1.0f);
-        
+        GLES20.glClearColor(0,0,0,1.0f); //设置屏幕背景色RGBA
+   /*     Android 上使用Opengl进行滤镜渲染效率较高，
+        比起单纯的使用CPU给用户带来的体验会好很多。
+        滤镜的对象是图片，图片是以Bitmap的形式表示，Opengl不能直接处理Bitmap，
+        在Android上一般是通过GLSurfaceView来进行渲染的，
+        也可以说成Android需要借助GLSurfaceView来完成对图片的渲染。*/
+/*　GlSurfaceView 的图片来源依然是Bitmap，但是Bitmap需要以纹理（Texture）的形式载入到Opengl中。
+一下为载入纹理的步骤：
+        　　1. GLES20.glGenTextures() : 生成纹理资源的句柄
+         void glGenTextures(GLsizei n, GLuint *textures)
+        参数说明：
+                  n：用来生成纹理的数量（下面为 1）
+            　　textures：存储纹理索引的（下面为一个数组 t.mTextureID）
+        //句柄的学习http://www.cppblog.com/mymsdn/archive/2012/06/20/74221.html
+        　　2. GLES20.glBindTexture(): 绑定句柄
+       　　 3. GLUtils.texImage2D() ：将bitmap传递到已经绑定的纹理中
+        　　4. GLES20.glTexParameteri() ：设置纹理属性，过滤方式，拉伸方式等*/
+        //GLES的API文档https://www.opengl.org/wiki/Category:Core_API_Reference
+        //函数思考学习http://blog.csdn.net/shuaihj/article/details/7244320
+        //以下的函数都会在上面网站找到
         for (Texture t : mTextures)
         {
             GLES20.glGenTextures(1, t.mTextureID, 0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, t.mTextureID[0]);
             GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+            //这是纹理过滤，MIN,LINEAR缩小线性过滤，线性(使用距离当前渲染像素中心最近的4个纹素加权平均值.)
             GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+            //放大线性过滤,后面的LINEAR可以更换为NEAREST接近滤波
             GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA,
                 t.mWidth, t.mHeight, 0, GLES20.GL_RGBA,
                 GLES20.GL_UNSIGNED_BYTE, t.mData);
+          //  SampleUtils.checkGLError("");查看util下的ampleSUtils类，该函数用于检查GLES运行时的错误
+            //定义一个二维纹理映射。 glTexImage2D(GLenum target,GLint level,GLint components,
+            // GLsizei width, glsizei height,GLint border,GLenum format,
+            // GLenum type, const GLvoid *pixels);
+            //参数format和type描述了纹理映射的格式和数据类型
+            // 篇幅过长避免混乱，链接http://blog.csdn.net/shuaihj/article/details/7244313
         }
-        
+        //下面这个SampleUtils类里面有相应的注释，观察下面的CubeShaders.CUBE_MESH_VERTEX_SHADER,
+        //查看可知这是一个String类型数据，仔细观察可知这是一个程序的Scr文件，
+        //OpenGL会自行去调用里面的程序进行运行
         shaderProgramID = SampleUtils.createProgramFromShaderSrc(
             CubeShaders.CUBE_MESH_VERTEX_SHADER,
             CubeShaders.CUBE_MESH_FRAGMENT_SHADER);
-        //获取着色器参数ID
+        // glGetAttribLocation方法：获取着色器程序中，指定为attribute类型变量的id
+        // // 获取指向着色器中vertexPosition的index
         vertexHandle = GLES20.glGetAttribLocation(shaderProgramID,
-            "vertexPosition");
+            "vertexPosition");//attribute vec4 vertexPosition
         normalHandle = GLES20.glGetAttribLocation(shaderProgramID,
-            "vertexNormal");
+            "vertexNormal");//attribute vec4 vertexNormal
         textureCoordHandle = GLES20.glGetAttribLocation(shaderProgramID,
-            "vertexTexCoord");
+            "vertexTexCoord");//attribute vec2 vertexTexCoord
         mvpMatrixHandle = GLES20.glGetUniformLocation(shaderProgramID,
-            "modelViewProjectionMatrix");
+            "modelViewProjectionMatrix");//uniform mat4 modelViewProjectionMatrix
         texSampler2DHandle = GLES20.glGetUniformLocation(shaderProgramID,
-            "texSampler2D");
-        
+            "texSampler2D");//uniform sampler2D texSampler2D
+       /* SampleUtils.checkGLError("");*/
         try
         {
             mBuildingsModel = new SampleApplication3DModel();
@@ -173,6 +204,8 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
     // The render function.
         private void renderFrame()
         {
+            //Log.i(LOGTAG,"renderFrame");
+            //这个画图功能函数也在不断的调用
             //清除颜色缓冲和深度缓冲
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
@@ -189,35 +222,46 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
         // to determine the direction of the culling
         GLES20.glEnable(GLES20.GL_CULL_FACE);
         GLES20.glCullFace(GLES20.GL_BACK);
+
         if (Renderer.getInstance().getVideoBackgroundConfig().getReflection() == VIDEO_BACKGROUND_REFLECTION.VIDEO_BACKGROUND_REFLECTION_ON)
             GLES20.glFrontFace(GLES20.GL_CW); // Front camera
         else
             GLES20.glFrontFace(GLES20.GL_CCW); // Back camera
-            
+
         // did we find any trackables this frame?
         for (int tIdx = 0; tIdx < state.getNumTrackableResults(); tIdx++)
         {
+            //以下为追踪到的结果，http://bbs.csdn.net/topics/390870561
             TrackableResult result = state.getTrackableResult(tIdx);
             Trackable trackable = result.getTrackable();
+            // trackable为每个可跟踪的内容，具有名字，id和类型
             printUserData(trackable);
             Matrix44F modelViewMatrix_Vuforia = Tool
                 .convertPose2GLMatrix(result.getPose());
+            // 接下来就获取位置矩阵等，为一个4*4的矩阵，有四个表示坐标的行向量
             float[] modelViewMatrix = modelViewMatrix_Vuforia.getData();
             //？yes no 进行判断，如果为stones为0，tarmac为2，都不是为1
+            //在ImageTargets方法的LoadTexture中可以发现
+            //0为grass,1为bule,2为red,以下对应的正是纹理图片的选择，修改测试成功
             int textureIndex = trackable.getName().equalsIgnoreCase("stones") ? 0
-                : 1;
-            textureIndex = trackable.getName().equalsIgnoreCase("tarmac") ? 2
+                : 2;
+            textureIndex = trackable.getName().equalsIgnoreCase("tarmac") ? 1
                 : textureIndex;
             
             // deal with the modelview and projection matrices
             float[] modelViewProjection = new float[16];
-            
+
+             //以下关于矩阵的变换函数的部分介绍
+            // http://blog.sina.com.cn/s/blog_a23d30f101018gl4.html
             if (!mActivity.isExtendedTrackingActive())
             {
                 Matrix.translateM(modelViewMatrix, 0, 0.0f, 0.0f,
                     OBJECT_SCALE_FLOAT);
+                //物体平移Matrix.translateM(mMMatrix,0,//偏移量,x, y, z//平移量)
+                //将物体沿着Z轴上升
                 Matrix.scaleM(modelViewMatrix, 0, OBJECT_SCALE_FLOAT,
                     OBJECT_SCALE_FLOAT, OBJECT_SCALE_FLOAT);
+                //Matrix.scaleM(mMMatrix,sx,sy, sz//缩放因子)
             } else
             {
                 Matrix.rotateM(modelViewMatrix, 0, 90.0f, 1.0f, 0, 0);
@@ -227,25 +271,41 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
             
             Matrix.multiplyMM(modelViewProjection, 0, vuforiaAppSession
                 .getProjectionMatrix().getData(), 0, modelViewMatrix, 0);
-            
+            //两矩阵相乘，将结果置于modelViewProjection数组中
+            //vuforiaAppSession.getProjectionMatrix().getData()相机位置矩阵
             // activate the shader program and bind the vertex/normal/tex coords
             GLES20.glUseProgram(shaderProgramID);
-            
+            SampleUtils.checkGLError("glUseProgram");//以上的GLES运行无错
+            //楼房的渲染
             if (!mActivity.isExtendedTrackingActive())
             {
                 GLES20.glVertexAttribPointer(vertexHandle, 3, GLES20.GL_FLOAT,
                     false, 0, mTeapot.getVertices());
+                //变量类型为vec4(x,y,z,1)，这里是3的缘故，
+                // 表示(x,y,z)后面那个比例系数1不用
+                SampleUtils.checkGLError("vert");
                 GLES20.glVertexAttribPointer(normalHandle, 3, GLES20.GL_FLOAT,
                     false, 0, mTeapot.getNormals());
+                SampleUtils.checkGLError("normal");//这里出错gl_Normal代表顶点的法线
                 GLES20.glVertexAttribPointer(textureCoordHandle, 2,
                     GLES20.GL_FLOAT, false, 0, mTeapot.getTexCoords());
-                
+                SampleUtils.checkGLError("coord");
+                //启用或者禁用顶点属性数组，下面为启用
                 GLES20.glEnableVertexAttribArray(vertexHandle);
+                SampleUtils.checkGLError("vd");
                 GLES20.glEnableVertexAttribArray(normalHandle);
+                SampleUtils.checkGLError("nd");//这里出错
                 GLES20.glEnableVertexAttribArray(textureCoordHandle);
-                
+                SampleUtils.checkGLError("td");
+
                 // activate texture 0, bind it, and pass to shader
+                //选择活动纹理单元。函数原型：
+                /*void glActiveTexture (int texture)
+                参数含义：
+                texture指定哪一个纹理单元被置为活动状态。texture必须是GL_TEXTUREi之一，*//*
+                其中0 <= i < GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS，初始值为GL_TEXTURE0。*/
                 GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+                //确定了后续的纹理状态改变影响哪个纹理，纹理单元的数量是依据该纹理单元所被支持的具体实现。
                 GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,
                     mTextures.get(textureIndex).mTextureID[0]);
                 GLES20.glUniform1i(texSampler2DHandle, 0);
@@ -253,18 +313,19 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
                 // pass the model view matrix to the shader
                 GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false,
                     modelViewProjection, 0);
-                
                 // finally draw the teapot
                 GLES20.glDrawElements(GLES20.GL_TRIANGLES,
                     mTeapot.getNumObjectIndex(), GLES20.GL_UNSIGNED_SHORT,
                     mTeapot.getIndices());
-                
+                //以上无标记处无错误
                 // disable the enabled arrays
                 GLES20.glDisableVertexAttribArray(vertexHandle);
                 GLES20.glDisableVertexAttribArray(normalHandle);
                 GLES20.glDisableVertexAttribArray(textureCoordHandle);
+                SampleUtils.checkGLError("GOD7");
             } else
             {
+                //绘制大楼
                 GLES20.glDisable(GLES20.GL_CULL_FACE);
                 GLES20.glVertexAttribPointer(vertexHandle, 3, GLES20.GL_FLOAT,
                     false, 0, mBuildingsModel.getVertices());
@@ -272,11 +333,10 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
                     false, 0, mBuildingsModel.getNormals());
                 GLES20.glVertexAttribPointer(textureCoordHandle, 2,
                     GLES20.GL_FLOAT, false, 0, mBuildingsModel.getTexCoords());
-                
                 GLES20.glEnableVertexAttribArray(vertexHandle);
                 GLES20.glEnableVertexAttribArray(normalHandle);
                 GLES20.glEnableVertexAttribArray(textureCoordHandle);
-                
+                SampleUtils.checkGLError("GOD5");
                 GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
                 GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,
                     mTextures.get(3).mTextureID[0]);
@@ -285,12 +345,20 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
                 GLES20.glUniform1i(texSampler2DHandle, 0);
                 GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0,
                     mBuildingsModel.getNumObjectVertex());
-                
+                SampleUtils.checkGLError("GOD6");
                 SampleUtils.checkGLError("Renderer DrawBuildings");
             }
             
             SampleUtils.checkGLError("Render Frame");
-            
+            //调试这里一直报错
+            //GL_INVALID_VALUE, 0x0501
+           /* Given when a value parameter is not a legal value for that function.
+            This is only given for local problems;
+            if the spec allows the value in certain circumstances,
+            where other parameters or state dictate those circumstances,
+            then GL_INVALID_OPERATION is the result instead.*/
+            //https://www.opengl.org/wiki/OpenGL_Error
+
         }
         
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);

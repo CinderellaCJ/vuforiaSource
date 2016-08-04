@@ -15,23 +15,32 @@ import android.util.Log;
 
 public class SampleUtils
 {
-    
+
     private static final String LOGTAG = "Vuforia_Sample_Applications";
     
-    
+    //传送门http://www.tuicool.com/articles/VZVJra
     static int initShader(int shaderType, String source)
     {
         int shader = GLES20.glCreateShader(shaderType);
+     /* 步骤1：申请特定着色器
+       shaderType  GLES20.GL_VERTEX_SHADER(顶点)   GLES20.GL_FRAGMENT_SHADER(片元)
+       如果申请成功则返回的shaderId不为零
+       下面为申请着色器成功*/
         if (shader != 0)
         {
-            GLES20.glShaderSource(shader, source);
-            GLES20.glCompileShader(shader);
+            //步骤2：给申请成功的着色器加载脚本并编译,查错
+            GLES20.glShaderSource(shader, source);/// source是脚本字符串，是函数的参数
+            GLES20.glCompileShader(shader);///编译
             
             int[] glStatusVar = { GLES20.GL_FALSE };
-            GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, glStatusVar,
-                0);
-            if (glStatusVar[0] == GLES20.GL_FALSE)
+            GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS,
+                    glStatusVar, 0);
+            //查看编译情况，函数原型：
+          /*  void glGetProgramiv (int program, int pname, int[] params, int offset)*/
+            // param是返回值
+            if (glStatusVar[0] == GLES20.GL_FALSE)//编译失败,释放申请的着色器
             {
+                Log.i(LOGTAG,"apply shader failed");
                 Log.e(LOGTAG, "Could NOT compile shader " + shaderType + " : "
                     + GLES20.glGetShaderInfoLog(shader));
                 GLES20.glDeleteShader(shader);
@@ -43,30 +52,35 @@ public class SampleUtils
         return shader;
     }
     
-    
+    //创建着色器代码段， glCreateProgram，在连接shader之前，首先要创建一个容纳程序的容器，
+    // 称为着色器程序容器。可以通过glCreateProgram函数来创建一个程序容器。
     public static int createProgramFromShaderSrc(String vertexShaderSrc,
         String fragmentShaderSrc)
     {
+        //见上面，此处为申请一个shader容器，GL_VERTEX_SHADER顶点，GL_FRAGMENT_SHADER片元
         int vertShader = initShader(GLES20.GL_VERTEX_SHADER, vertexShaderSrc);
         int fragShader = initShader(GLES20.GL_FRAGMENT_SHADER,
             fragmentShaderSrc);
         
         if (vertShader == 0 || fragShader == 0)
-            return 0;
-        
+            return 0;//上面返回值vertShader，fragShader为0即为申请失败，结束此函数
+        //创建着色器程序
         int program = GLES20.glCreateProgram();
+        //若程序创建成功则向程序中加入顶点着色器与片元着色器
         if (program != 0)
         {
             GLES20.glAttachShader(program, vertShader);
             checkGLError("glAttchShader(vert)");
-            
+           // 向程序中加入顶点着色器
             GLES20.glAttachShader(program, fragShader);
             checkGLError("glAttchShader(frag)");
-            
+            //向程序中加入片元着色器
             GLES20.glLinkProgram(program);
+            //链接程序
+           // 存放链接成功program 数量的数组
             int[] glStatusVar = { GLES20.GL_FALSE };
             GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, glStatusVar,
-                0);
+                0);//获取program的链接情况，若链接失败则报错并删除程序
             if (glStatusVar[0] == GLES20.GL_FALSE)
             {
                 Log.e(
@@ -77,13 +91,18 @@ public class SampleUtils
                 program = 0;
             }
         }
-        
+        // 释放shader资源，该部分源码为网上样例中出现，非本程序所有
+      /*  GLES20.glDeleteShader(vertShader);
+        GLES20.glDeleteShader(fragShader);*/
+        //经测试，上述代码加入后并不影响程序运行
         return program;
     }
     
     
     public static void checkGLError(String op)
     {
+        //https://www.opengl.org/wiki/OpenGL_Error
+        //识别图形后，这里一直报错
         for (int error = GLES20.glGetError(); error != 0; error = GLES20
             .glGetError())
             Log.e(

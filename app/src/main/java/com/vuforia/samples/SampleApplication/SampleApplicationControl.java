@@ -48,6 +48,7 @@ public interface SampleApplicationControl
     
     
     // This callback is called every cycle
+    //这是一个回调函数  void onVuforiaUpdate(State state);
     void onVuforiaUpdate(State state);
     
 }

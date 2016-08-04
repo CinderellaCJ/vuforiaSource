@@ -105,6 +105,7 @@ public class SampleApplicationSession implements UpdateCallbackInterface
     {
         SampleApplicationException vuforiaException = null;
         mActivity = activity;
+        Log.i(LOGTAG,"initAR");
        // ActivityInfo.SCREEN_ORIENTATION_SENSOR,//由物理感应器决定显示方向
         if ((screenOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR)
 
@@ -176,6 +177,7 @@ public class SampleApplicationSession implements UpdateCallbackInterface
         {
             try
             {
+                Log.i(LOGTAG,"新建一个InitVuforiaTask to init");
                 mInitVuforiaTask = new InitVuforiaTask();
                 mInitVuforiaTask.execute();
             } catch (Exception e)
@@ -197,6 +199,7 @@ public class SampleApplicationSession implements UpdateCallbackInterface
     public void startAR(int camera) throws SampleApplicationException
     {
         String error;
+        Log.i(LOGTAG,"startAR");
         if(mCameraRunning)
         {
         	error = "Camera already running, unable to open again";
@@ -397,10 +400,10 @@ public class SampleApplicationSession implements UpdateCallbackInterface
     {
         // Initialize with invalid value:
         private int mProgressValue = -1;
-        
-        
+        private static final String INITLOGTAG = "VSA_InitVuforiaTask";
         protected Boolean doInBackground(Void... params)
         {
+            Log.i(INITLOGTAG,"doInBackground");
             // Prevent the onDestroy() method to overlap with initialization:
             //doInBackground(Params…) 后台执行，比较耗时的操作都可以放在这里。注意这里不能直接操作UI。
             // 此方法在后台线程执行，完成任务的主要工作，通常需要较长的时间。在执行过程中可以调用
@@ -448,13 +451,16 @@ public class SampleApplicationSession implements UpdateCallbackInterface
         {
             // Done initializing Vuforia, proceed to next application
             // initialization status:
-            
+            Log.i(INITLOGTAG,"onPostExecute");
             SampleApplicationException vuforiaException = null;
             
             if (result)
             {
-                Log.d(LOGTAG, "InitVuforiaTask.onPostExecute: Vuforia "
-                    + "initialization successful");
+                //下面也把Log.d进行替换
+           /*     Log.d(LOGTAG, "InitVuforiaTask.onPostExecute: Vuforia "
+                    + "initialization successful");*/
+                Log.i(LOGTAG, "InitVuforiaTask.onPostExecute: Vuforia "
+                        + "initialization successful");
                 
                 boolean initTrackersResult;
                 initTrackersResult = mSessionControl.doInitTrackers();
@@ -508,8 +514,10 @@ public class SampleApplicationSession implements UpdateCallbackInterface
     // An async task to load the tracker data asynchronously.
     private class LoadTrackerTask extends AsyncTask<Void, Integer, Boolean>
     {
+
         protected Boolean doInBackground(Void... params)
         {
+            Log.i(LOGTAG,"in LoadTrackerTask doInBackground");
             // Prevent the onDestroy() method to overlap:
             synchronized (mShutdownLock)
             {
@@ -521,7 +529,7 @@ public class SampleApplicationSession implements UpdateCallbackInterface
         
         protected void onPostExecute(Boolean result)
         {
-            
+            Log.i(LOGTAG,"I am in onpostExcute");
             SampleApplicationException vuforiaException = null;
             
             Log.d(LOGTAG, "LoadTrackerTask.onPostExecute: execution "
@@ -543,7 +551,7 @@ public class SampleApplicationSession implements UpdateCallbackInterface
                 // NOTE: This is only a hint. There is no guarantee that the
                 // garbage collector will actually be run.
                 System.gc();
-                
+                Log.i(LOGTAG,"registerCallback");
                 Vuforia.registerCallback(SampleApplicationSession.this);
                 
                 mStarted = true;
@@ -587,6 +595,7 @@ public class SampleApplicationSession implements UpdateCallbackInterface
     {
         //获取屏幕大小边界，宽和高
         // Query display dimensions:
+        Log.i(LOGTAG,"storeScreenDimensions");
         DisplayMetrics metrics = new DisplayMetrics();
         mActivity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
         //资料网站http://blog.csdn.net/yujian_bing/article/details/8264780
@@ -599,7 +608,7 @@ public class SampleApplicationSession implements UpdateCallbackInterface
     private void updateActivityOrientation()
     {
         Configuration config = mActivity.getResources().getConfiguration();
-        
+        Log.i(LOGTAG,"updateActivityOrientation");
         switch (config.orientation)
         {
             case Configuration.ORIENTATION_PORTRAIT:
@@ -624,6 +633,7 @@ public class SampleApplicationSession implements UpdateCallbackInterface
     //学术文档http://www.uni-koeln.de/~al001/radcor_files/hs100.htm
     public void setProjectionMatrix()
     {
+        Log.i(LOGTAG,"setProjectionMatrix");
         CameraCalibration camCal = CameraDevice.getInstance().getCameraCalibration();
         //四行四列的矩阵
         mProjectionMatrix = Tool.getProjectionGL(camCal, 10.0f, 5000.0f);
@@ -652,6 +662,7 @@ public class SampleApplicationSession implements UpdateCallbackInterface
     //配置录像模式和设置摄像机图片的偏移量
     private void configureVideoBackground()
     {
+        Log.i(LOGTAG, "configureVideoBackground");
         CameraDevice cameraDevice = CameraDevice.getInstance();
         //CameraDevice有三种模式，
         // 一种是 MODE_DEFAULT：速度和效率之间。

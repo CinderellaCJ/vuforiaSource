@@ -103,7 +103,10 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-        Log.d(LOGTAG, "onCreate");
+        //Log.d并没有在日志里面显示，查阅资料显示可能跟使用的手机是华为的有关系
+        //故将下面的Log.d改为Log.i进行调试
+        //Log.d(LOGTAG, "onCreate");
+        Log.i(LOGTAG, "onCreate");
         super.onCreate(savedInstanceState);
         //构造函数
         vuforiaAppSession = new SampleApplicationSession(this);
@@ -168,6 +171,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     
     private void loadTextures()
     {
+        Log.i(LOGTAG,"loadTextures");
         mTextures.add(Texture.loadTextureFromApk("TextureTeapotBrass.png",
             getAssets()));
         mTextures.add(Texture.loadTextureFromApk("TextureTeapotBlue.png",
@@ -289,6 +293,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     {
         // Create OpenGL ES view:
         //这部分的文档资料在实验室的电脑上
+        Log.i(LOGTAG,"initapplicationAR");
         int depthSize = 16;
         int stencilSize = 0;
         boolean translucent = Vuforia.requiresAlpha();
@@ -307,6 +312,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     private void startLoadingAnimation()
     {
         //这个函数用于实现加载界面那个圆环的转动效果，该段代码可以进行今后开发的复用
+        Log.i(LOGTAG,"startLoadingAnimation");
         mUILayout = (RelativeLayout) View.inflate(this, R.layout.camera_overlay,
             null);
         //inflate是一个获得xml文件界面布局的方法
@@ -334,6 +340,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     @Override
     public boolean doLoadTrackersData()
     {
+        Log.i(LOGTAG,"doLoadTrackerData");
         //vuforia sample里面用了getInstance的都是单例，单例指一个类只有一个对象，是一种架构手段
         TrackerManager tManager = TrackerManager.getInstance();
         //static TrackerManager &  getInstance ()
@@ -387,6 +394,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     @Override
     public boolean doUnloadTrackersData()
     {
+        Log.i(LOGTAG,"doUnloadTrackersData");
         // 这部分与doloadTrackersData功能相反，用于撤销删除Data数据
         // Indicate if the trackers were unloaded correctly，
         boolean result = true;
@@ -418,7 +426,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     @Override
     public void onInitARDone(SampleApplicationException exception)
     {
-        
+        Log.i(LOGTAG,"onInitARDone");
         if (exception == null)
         {
             initApplicationAR();
@@ -443,6 +451,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
             try
             {
                 //CameraDirection为调用设备的照相机，DEFAULT默认，FRONT前摄像头，BACK后摄像头
+                Log.i(LOGTAG,"OnInitARDone:try to start camera");
                 vuforiaAppSession.startAR(CameraDevice.CAMERA_DIRECTION.CAMERA_DIRECTION_DEFAULT);
             } catch (SampleApplicationException e)
             {
@@ -452,7 +461,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
             //传送门http://bbs.csdn.net/topics/390884037
             boolean result = CameraDevice.getInstance().setFocusMode(
                 CameraDevice.FOCUS_MODE.FOCUS_MODE_CONTINUOUSAUTO);
-            
+            Log.i(LOGTAG,"vuforiaAppSession.startAR is done");
             if (result)
                 mContAutofocus = true;
             else
@@ -510,6 +519,9 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     @Override
     public void onVuforiaUpdate(State state)
     {
+        //这个函数会不断的调用,在样例5-5-9中表现为更换识别图时对DATASET的迅速更换
+        //switchDataset as soon as possible
+     //   Log.i(LOGTAG,"onVuforiaUpdate");
         if (mSwitchDatasetAsap)
         {
             mSwitchDatasetAsap = false;
@@ -527,11 +539,13 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
             doLoadTrackersData();
         }
     }
-    
+
+
     
     @Override
     public boolean doInitTrackers()
     {
+        Log.i(LOGTAG,"doInitTrackers");
         // Indicate if the trackers were initialized correctly
         boolean result = true;
         
@@ -557,6 +571,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     @Override
     public boolean doStartTrackers()
     {
+        Log.i(LOGTAG,"doStartTrackers");
         // Indicate if the trackers were started correctly
         boolean result = true;
         
