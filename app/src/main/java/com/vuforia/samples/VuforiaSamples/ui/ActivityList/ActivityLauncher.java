@@ -25,7 +25,7 @@ import com.vuforia.samples.VuforiaSamples.R;
 // This activity starts activities which demonstrate the Vuforia features
 public class ActivityLauncher extends ListActivity
 {
-    
+//    vuforia基础功能
     private String mActivities[] = { "Image Targets", "Cylinder Targets",
             "Multi Targets", "User Defined Targets", "Object Reco", "Cloud Reco", "Text Reco",
             "Frame Markers", "Virtual Buttons"};
@@ -35,9 +35,10 @@ public class ActivityLauncher extends ListActivity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+//        一个adapter对象
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
             R.layout.activities_list_text_view, mActivities);
-        
+//        无标题全屏风格
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -46,12 +47,14 @@ public class ActivityLauncher extends ListActivity
         setListAdapter(adapter);
     }
     
-    
+//    listView Item 点击事件监听
     @Override
+//    position 指在listview里的位置，id是view的资源id。
     public void onListItemClick(ListView l, View v, int position, long id)
     {
-        
+//        新建一个intent用来启动下一个界面
         Intent intent = new Intent(this, AboutScreen.class);
+//        不在现的activity间传递参数
         intent.putExtra("ABOUT_TEXT_TITLE", mActivities[position]);
         
         switch (position)
@@ -103,7 +106,7 @@ public class ActivityLauncher extends ListActivity
                 intent.putExtra("ABOUT_TEXT", "VirtualButtons/VB_about.html");
                 break;
         }
-        
+//        跳转下一个界面
         startActivity(intent);
         
     }

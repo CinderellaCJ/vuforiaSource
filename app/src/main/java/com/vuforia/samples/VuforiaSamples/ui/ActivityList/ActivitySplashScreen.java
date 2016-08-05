@@ -21,10 +21,10 @@ import android.widget.RelativeLayout;
 
 import com.vuforia.samples.VuforiaSamples.R;
 
-
+//应用程序从这开始,这是一个启动界面
 public class ActivitySplashScreen extends Activity
 {
-    
+//    启动界面时间0.45秒
     private static long SPLASH_MILLIS = 450;
     
     
@@ -32,19 +32,21 @@ public class ActivitySplashScreen extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        
+//        无标题，全屏
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        
+//        LayoutInflater是用来加载一个布局文件就是.xml文件
         LayoutInflater inflater = LayoutInflater.from(this);
+//        使用inflate方法加载一个布局文件
         RelativeLayout layout = (RelativeLayout) inflater.inflate(
             R.layout.splash_screen, null, false);
-        
+//        设置布局参数
         addContentView(layout, new LayoutParams(LayoutParams.MATCH_PARENT,
             LayoutParams.MATCH_PARENT));
-        
+//        handler实例化
         final Handler handler = new Handler();
+//        延迟 SPLASH_MILLIS 启动
         handler.postDelayed(new Runnable()
         {
             
