@@ -9,12 +9,6 @@ countries.
 
 package com.vuforia.samples.VuforiaSamples.app.ImageTargets;
 
-import java.io.IOException;
-import java.util.Vector;
-
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
@@ -35,6 +29,12 @@ import com.vuforia.samples.SampleApplication.utils.SampleApplication3DModel;
 import com.vuforia.samples.SampleApplication.utils.SampleUtils;
 import com.vuforia.samples.SampleApplication.utils.Teapot;
 import com.vuforia.samples.SampleApplication.utils.Texture;
+
+import java.io.IOException;
+import java.util.Vector;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 
 // The renderer class for the ImageTargets sample. 
@@ -61,7 +61,7 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
     
     private Teapot mTeapot;
     
-    private float kBuildingScale = 12.0f;
+    private float kBuildingScale = 10f;
     //变换矩阵的参数
     private SampleApplication3DModel mBuildingsModel;
     
@@ -69,9 +69,10 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
     
     boolean mIsActive = false;
     
-    private static final float OBJECT_SCALE_FLOAT = 50.0f;
-    //变换矩阵的参数
-    
+    private static final float OBJECT_SCALE_FLOAT = 5f;
+    //变换矩阵的参数（缩放平移因子）
+
+//    构造函数
     public ImageTargetRenderer(ImageTargets activity,
         SampleApplicationSession session)
     {
@@ -118,15 +119,24 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
     }
 
     // Function for initializing the renderer.
-    private void initRendering()
-    {
+    private void initRendering() {
+//        for (int i = 0; i < 16; i += 4) {
+//            Log.i(LOGTAG,
+//                    vuforiaAppSession.getProjectionMatrix().getData()[i] + "   " +
+//                            vuforiaAppSession.getProjectionMatrix().getData()[i + 1] + "   " +
+//                            vuforiaAppSession.getProjectionMatrix().getData()[i + 2] + "   " +
+//                            vuforiaAppSession.getProjectionMatrix().getData()[i + 3] + "   ");
+//
+//
+//        }
+
         mTeapot = new Teapot();
-        Log.i(LOGTAG,"initRendering");
+        Log.i(LOGTAG, "initRendering");
         mRenderer = Renderer.getInstance();
-        
+
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, Vuforia.requiresAlpha() ? 0.0f
-            : 1.0f);
-        GLES20.glClearColor(0,0,0,1.0f); //设置屏幕背景色RGBA
+                : 1.0f);
+        GLES20.glClearColor(0, 0, 0, 1.0f); //设置屏幕背景色RGBA
    /*     Android 上使用Opengl进行滤镜渲染效率较高，
         比起单纯的使用CPU给用户带来的体验会好很多。
         滤镜的对象是图片，图片是以Bitmap的形式表示，Opengl不能直接处理Bitmap，
@@ -146,20 +156,19 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
         //GLES的API文档https://www.opengl.org/wiki/Category:Core_API_Reference
         //函数思考学习http://blog.csdn.net/shuaihj/article/details/7244320
         //以下的函数都会在上面网站找到
-        for (Texture t : mTextures)
-        {
+        for (Texture t : mTextures) {
             GLES20.glGenTextures(1, t.mTextureID, 0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, t.mTextureID[0]);
             GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+                    GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
             //这是纹理过滤，MIN,LINEAR缩小线性过滤，线性(使用距离当前渲染像素中心最近的4个纹素加权平均值.)
             GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+                    GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
             //放大线性过滤,后面的LINEAR可以更换为NEAREST接近滤波
             GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA,
-                t.mWidth, t.mHeight, 0, GLES20.GL_RGBA,
-                GLES20.GL_UNSIGNED_BYTE, t.mData);
-          //  SampleUtils.checkGLError("");查看util下的ampleSUtils类，该函数用于检查GLES运行时的错误
+                    t.mWidth, t.mHeight, 0, GLES20.GL_RGBA,
+                    GLES20.GL_UNSIGNED_BYTE, t.mData);
+            //  SampleUtils.checkGLError("");查看util下的ampleSUtils类，该函数用于检查GLES运行时的错误
             //定义一个二维纹理映射。 glTexImage2D(GLenum target,GLint level,GLint components,
             // GLsizei width, glsizei height,GLint border,GLenum format,
             // GLenum type, const GLvoid *pixels);
@@ -170,35 +179,35 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
         //查看可知这是一个String类型数据，仔细观察可知这是一个程序的Scr文件，
         //OpenGL会自行去调用里面的程序进行运行
         shaderProgramID = SampleUtils.createProgramFromShaderSrc(
-            CubeShaders.CUBE_MESH_VERTEX_SHADER,
-            CubeShaders.CUBE_MESH_FRAGMENT_SHADER);
+                CubeShaders.CUBE_MESH_VERTEX_SHADER,
+                CubeShaders.CUBE_MESH_FRAGMENT_SHADER);
         // glGetAttribLocation方法：获取着色器程序中，指定为attribute类型变量的id
         // // 获取指向着色器中vertexPosition的index
         vertexHandle = GLES20.glGetAttribLocation(shaderProgramID,
-            "vertexPosition");//attribute vec4 vertexPosition
+                "vertexPosition");//attribute vec4 vertexPosition
         normalHandle = GLES20.glGetAttribLocation(shaderProgramID,
-            "vertexNormal");//attribute vec4 vertexNormal
+                "vertexNormal");//attribute vec4 vertexNormal
         textureCoordHandle = GLES20.glGetAttribLocation(shaderProgramID,
-            "vertexTexCoord");//attribute vec2 vertexTexCoord
+                "vertexTexCoord");//attribute vec2 vertexTexCoord
         mvpMatrixHandle = GLES20.glGetUniformLocation(shaderProgramID,
-            "modelViewProjectionMatrix");//uniform mat4 modelViewProjectionMatrix
+                "modelViewProjectionMatrix");//uniform mat4 modelViewProjectionMatrix
         texSampler2DHandle = GLES20.glGetUniformLocation(shaderProgramID,
-            "texSampler2D");//uniform sampler2D texSampler2D
+                "texSampler2D");//uniform sampler2D texSampler2D
        /* SampleUtils.checkGLError("");*/
-        try
-        {
+        try {
             mBuildingsModel = new SampleApplication3DModel();
             mBuildingsModel.loadModel(mActivity.getResources().getAssets(),
-                "ImageTargets/Buildings.txt");
-        } catch (IOException e)
-        {
+                    "ImageTargets/Buildings.txt");
+        } catch (IOException e) {
             Log.e(LOGTAG, "Unable to load buildings");
         }
-        
+
         // Hide the Loading Dialog
         mActivity.loadingDialogHandler
-            .sendEmptyMessage(LoadingDialogHandler.HIDE_LOADING_DIALOG);
-        
+                .sendEmptyMessage(LoadingDialogHandler.HIDE_LOADING_DIALOG);
+
+
+
     }
     
     
@@ -215,7 +224,7 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
         
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
-        // Set the viewport
+        // Set the viewport（视图矩阵）
         int[] viewport = vuforiaAppSession.getViewport();
         GLES20.glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
         
@@ -230,12 +239,15 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
             GLES20.glFrontFace(GLES20.GL_CCW); // Back camera
 
         // did we find any trackables this frame?
+//            通过这里检测是否检测到target
         for (int tIdx = 0; tIdx < state.getNumTrackableResults(); tIdx++)
         {
             //以下为追踪到的结果，http://bbs.csdn.net/topics/390870561
+//            查看一帧中有几个特定的目标
             TrackableResult result = state.getTrackableResult(tIdx);
-            Trackable trackable = result.getTrackable();
             // trackable为每个可跟踪的内容，具有名字，id和类型
+            Trackable trackable = result.getTrackable();
+//            打印用户数据
             printUserData(trackable);
             Matrix44F modelViewMatrix_Vuforia = Tool
                 .convertPose2GLMatrix(result.getPose());
@@ -259,13 +271,15 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer
                 //对茶壶数据矩阵做变换
                 Matrix.translateM(modelViewMatrix, 0,OBJECT_SCALE_FLOAT, 0.0f,
                     OBJECT_SCALE_FLOAT);
-                Matrix.rotateM(modelViewMatrix, 0, 90.0f, 1.0f, 0, 0);
+                Matrix.rotateM(modelViewMatrix, 0, 0, 1.0f, 0, 0);
                 //物体平移Matrix.translateM(mMMatrix,0,//偏移量,x, y, z//平移量)
                 //将物体沿着Z轴上升
                 Matrix.scaleM(modelViewMatrix, 0, OBJECT_SCALE_FLOAT,
                     OBJECT_SCALE_FLOAT, OBJECT_SCALE_FLOAT);
                 //Matrix.scaleM(mMMatrix,sx,sy, sz//缩放因子)
                     //http://www.360doc.com/content/14/1028/09/19175681_420513219.shtml相机的学习
+
+
             } else
             {
                 //楼房矩阵变换

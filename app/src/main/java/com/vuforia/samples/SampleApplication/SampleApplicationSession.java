@@ -19,7 +19,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.OrientationEventListener;
 import android.view.WindowManager;
-
+//摄像头校准
 import com.vuforia.CameraCalibration;
 import com.vuforia.CameraDevice;
 import com.vuforia.Matrix44F;
@@ -42,7 +42,7 @@ import com.vuforia.samples.VuforiaSamples.R;
 public class SampleApplicationSession implements UpdateCallbackInterface
 {
     
-    private static final String LOGTAG = "Vuforia_Sample_Applications";
+    private static final String LOGTAG = "VuforiaApplications";
     
     // Reference to the current activity
     private Activity mActivity;
@@ -77,20 +77,20 @@ public class SampleApplicationSession implements UpdateCallbackInterface
     //CAMERA_DIRECTION摄像头的设备，CAMERA_DIRECTION_DEFAULT默认摄像头
     //CAMERA_DIRECTION_FRONT前摄像头，CAMERA_DIRECTION_BACK后摄像头
     private int mCamera = CameraDevice.CAMERA_DIRECTION.CAMERA_DIRECTION_DEFAULT;
-    
+//    投射矩阵
     // Stores the projection matrix to use for rendering purposes
     private Matrix44F mProjectionMatrix;
-
+//视图矩阵
     // Stores viewport to be used for rendering purposes
     private int[] mViewport;
-
+//方向
     // Stores orientation
     private boolean mIsPortrait = false;
     
     
     public SampleApplicationSession(SampleApplicationControl sessionControl)
     {
-        //most important
+        //most important构造函数
         // SampleApplicationControl为接口
         // 参数传进来都是一个activiy对象，这些对象都继承了control接口
         // 故这些对象可以上转型赋值给一个control接口
@@ -136,7 +136,7 @@ public class SampleApplicationSession implements UpdateCallbackInterface
                     mLastRotation = activityRotation;
                 }
             }
-
+//            此处的mLastRotation是先在上面引用再在下面定义的，这个本人不理解，有知道的朋友可以解释下这种方式，这种方式编译没错，但好像得不到想要的结果。
             int mLastRotation = -1;
         };
         
@@ -145,19 +145,18 @@ public class SampleApplicationSession implements UpdateCallbackInterface
 
         // Apply screen orientation
         mActivity.setRequestedOrientation(screenOrientation);
-        
+//        确认屏幕的朝向
         updateActivityOrientation();
-        
+//        获取屏幕边界及大小
         // Query display dimensions:
         storeScreenDimensions();
-        
         // As long as this window is visible to the user, keep the device's
         // screen turned on and bright:
         mActivity.getWindow().setFlags(
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         
-        mVuforiaFlags = Vuforia.GL_20;
+        mVuforiaFlags = Vuforia.GL_20;//常量2
         
         // Initialize Vuforia SDK asynchronously to avoid blocking the
         // main (UI) thread.

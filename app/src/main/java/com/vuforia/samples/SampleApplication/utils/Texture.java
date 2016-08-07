@@ -9,20 +9,21 @@ countries.
 
 package com.vuforia.samples.SampleApplication.utils;
 
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Log;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Log;
-
 
 // Support class for the Vuforia samples applications.
 // Exposes functionality for loading a texture from the APK.
+//纹理
 public class Texture
 {
     private static final String LOGTAG = "Vuforia_Texture";

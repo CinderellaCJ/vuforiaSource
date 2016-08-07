@@ -16,7 +16,7 @@ import android.util.Log;
 public class SampleUtils
 {
 
-    private static final String LOGTAG = "Vuforia_Sample_Applications";
+    private static final String LOGTAG = "VuforiaApplications";
     
     //传送门http://www.tuicool.com/articles/VZVJra
     static int initShader(int shaderType, String source)

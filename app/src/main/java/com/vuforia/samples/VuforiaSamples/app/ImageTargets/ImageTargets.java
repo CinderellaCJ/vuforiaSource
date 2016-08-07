@@ -61,7 +61,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     private static final String LOGTAG = "ImageTargets";
     
     SampleApplicationSession vuforiaAppSession;
-    
+//    数据集合
     private DataSet mCurrentDataset;
     private int mCurrentDatasetSelectionIndex = 0;
     private int mStartDatasetsIndex = 0;
@@ -73,7 +73,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     
     // Our renderer:
     private ImageTargetRenderer mRenderer;
-    
+//    用户手势检测
     private GestureDetector mGestureDetector;
     
     // The textures we will use for rendering:
@@ -81,8 +81,8 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     //texture类的作用是将一张图片进行读写，获取其RGBA值，将一张图片转化为一个对象进行存储起来
     private boolean mSwitchDatasetAsap = false;
     private boolean mFlash = false;
-    private boolean mContAutofocus = false;
-    private boolean mExtendedTracking = false;
+    private boolean mContAutofocus = false;//自动对焦
+    private boolean mExtendedTracking = false;//扩展追踪标志位
     
     private View mFlashOptionView;
     
@@ -96,8 +96,6 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     private AlertDialog mErrorDialog;
     
     boolean mIsDroidDevice = false;
-    
-    
     // Called when the activity first starts or the user navigates back to an
     // activity.
     @Override
@@ -108,27 +106,28 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
         //Log.d(LOGTAG, "onCreate");
         Log.i(LOGTAG, "onCreate");
         super.onCreate(savedInstanceState);
-        //构造函数
+        //实例化一个vuforiaAppSession
         vuforiaAppSession = new SampleApplicationSession(this);
-        
+//        这个函数用于实现加载界面那个圆环的转动效果
         startLoadingAnimation();
+//        可变数组，加载两个目标图片
         mDatasetStrings.add("StonesAndChips.xml");
         mDatasetStrings.add("Tarmac.xml");
-        
+//        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT：坚屏
         vuforiaAppSession
             .initAR(this, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        
+//        实例化一个手势检测
         mGestureDetector = new GestureDetector(this, new GestureListener());
         
         // Load any sample specific textures:
         mTextures = new Vector<Texture>();
         loadTextures();
-        
+//        检测是否是android环境
         mIsDroidDevice = android.os.Build.MODEL.toLowerCase().startsWith(
             "droid");
         
     }
-    
+//    单击处理事件聚焦
     // Process Single Tap event to trigger autofocus
     private class GestureListener extends
         GestureDetector.SimpleOnGestureListener
@@ -143,7 +142,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
             return true;
         }
         
-        
+//        1秒后auto聚焦
         @Override
         public boolean onSingleTapUp(MotionEvent e)
         {
@@ -189,10 +188,11 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     {
         Log.d(LOGTAG, "onResume");
         super.onResume();
-        
+//        强制横屏
         // This is needed for some Droid devices to force portrait
         if (mIsDroidDevice)
         {
+//            先横屏才竖屏
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
@@ -219,12 +219,11 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     @Override
      public void onConfigurationChanged(Configuration config)
     {
-        //界面变换后会自动调用的函数，包括大小的变化，键盘的消失于出现，横竖屏的切换
+        //界面变换后会自动调用的函数，包括大小的变化，键盘的消失于出现，横竖屏的切换，具体有哪些可以在AndroidManifest.xml中查看到
         //http://www.cnblogs.com/bluestorm/p/3622444.html
         Log.e(LOGTAG, "onConfigurationChanged");
-        //调试中有个问题，横竖屏切换后，上面log并没有出现在日志里面
+        //实际调试过程中一直竖屏
         super.onConfigurationChanged(config);
-        
         vuforiaAppSession.onConfigurationChanged();
     }
     
@@ -242,9 +241,10 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
             mGlView.onPause();
         }
         
-        // Turn off the flash
+        // Turn off the flash 闪光灯
         if (mFlashOptionView != null && mFlash)
         {
+//            根据不同的android版本来选择不同的API方式
             // OnCheckedChangeListener is called upon changing the checked state
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
             {
@@ -283,7 +283,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
         // Unload texture:
         mTextures.clear();
         mTextures = null;
-        
+//        通知系统回收垃圾
         System.gc();
     }
     
@@ -292,12 +292,11 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     private void initApplicationAR()
     {
         // Create OpenGL ES view:
-        //这部分的文档资料在实验室的电脑上
         Log.i(LOGTAG,"initapplicationAR");
         int depthSize = 16;
         int stencilSize = 0;
         boolean translucent = Vuforia.requiresAlpha();
-        
+//        openGL View实例化及初始化
         mGlView = new SampleApplicationGLView(this);
         mGlView.init(translucent, depthSize, stencilSize);
         
@@ -318,12 +317,12 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
         //inflate是一个获得xml文件界面布局的方法
         mUILayout.setVisibility(View.VISIBLE);
         //下面可以对加载背景颜色进行修改
-        mUILayout.setBackgroundColor(Color.BLUE);
+        mUILayout.setBackgroundColor(Color.LTGRAY);
         
         // Gets a reference to the loading dialog
         loadingDialogHandler.mLoadingDialogContainer = mUILayout
             .findViewById(R.id.loading_indicator);
-        
+//        显示那个圈圈
         // Shows the loading indicator at start
         loadingDialogHandler
             .sendEmptyMessage(LoadingDialogHandler.SHOW_LOADING_DIALOG);
@@ -341,11 +340,11 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     public boolean doLoadTrackersData()
     {
         Log.i(LOGTAG,"doLoadTrackerData");
-        //vuforia sample里面用了getInstance的都是单例，单例指一个类只有一个对象，是一种架构手段
+        //vuforia sample里面用了getInstance的都是单例，单例指一个类只有一个对象，是一种软件设计模式
         TrackerManager tManager = TrackerManager.getInstance();
         //static TrackerManager &  getInstance ()
        // Returns the TrackerManager singleton instance.
-        //objectTracker是Tracker的子类？
+        //objectTracker是Tracker的子类
             ObjectTracker objectTracker = (ObjectTracker) tManager
             .getTracker(ObjectTracker.getClassType());
         if (objectTracker == null)
@@ -389,13 +388,11 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
         
         return true;
     }
-    
-    
+    // 这部分与doloadTrackersData功能相反，用于撤销删除Data数据
     @Override
     public boolean doUnloadTrackersData()
     {
         Log.i(LOGTAG,"doUnloadTrackersData");
-        // 这部分与doloadTrackersData功能相反，用于撤销删除Data数据
         // Indicate if the trackers were unloaded correctly，
         boolean result = true;
         
@@ -522,6 +519,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
         //这个函数会不断的调用,在样例5-5-9中表现为更换识别图时对DATASET的迅速更换
         //switchDataset as soon as possible
      //   Log.i(LOGTAG,"onVuforiaUpdate");
+//        切换不同的数据库
         if (mSwitchDatasetAsap)
         {
             mSwitchDatasetAsap = false;
@@ -755,6 +753,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
                 // Turn off the flash
                 if (mFlashOptionView != null && mFlash)
                 {
+//                    根据不同的API切换不同的版本
                     // OnCheckedChangeListener is called upon changing the checked state
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
                     {
